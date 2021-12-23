@@ -19,8 +19,12 @@ func Filter(s []string, e string) bool {
 	return false
 }
 
-func ExecuteTemplate(id, format, message string, extras map[string]string) (string, error) {
-	t, err := template.New(id).Parse(format)
+func ExecuteTemplate(id, tmpl, message string, extras map[string]string) (string, error) {
+	if tmpl == "" {
+		tmpl = "{{ .Message }}"
+	}
+
+	t, err := template.New(id).Parse(tmpl)
 	if err != nil {
 		return "", err
 	}

@@ -22,7 +22,7 @@ type Notifier struct {
 	client    *http.Client
 }
 
-func New(client *http.Client, options *provider.ProviderOptions) (*Notifier, error) {
+func New(client *http.Client, options *provider.Options) (*Notifier, error) {
 	notifier := &Notifier{
 		client: client,
 	}

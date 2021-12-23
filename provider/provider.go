@@ -9,7 +9,7 @@ import (
 	"github.com/hupe1980/notifier/provider/webhook"
 )
 
-type ProviderOptions struct {
+type Options struct {
 	Slack   []*slack.Options   `mapstructure:"slack,omitempty"`
 	SNS     []*sns.Options     `mapstructure:"sns,omitempty"`
 	Teams   []*teams.Options   `mapstructure:"teams,omitempty"`

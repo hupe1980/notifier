@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hupe1980/notifier/util"
 	"go.uber.org/multierr"
 )
 
@@ -45,6 +46,11 @@ func (pr *Provider) Send(ctx context.Context, message string, extras map[string]
 }
 
 func (pr *Provider) send(ctx context.Context, message string, extras map[string]string, options *Options) error {
+	message, err := util.ExecuteTemplate(options.ID, options.Template, message, extras)
+	if err != nil {
+		return err
+	}
+
 	payload, err := json.Marshal(WebhookRequest{
 		Text: message,
 	})
@@ -68,7 +74,9 @@ func (pr *Provider) send(ctx context.Context, message string, extras map[string]
 
 	if resp.StatusCode != http.StatusOK {
 		buf := new(bytes.Buffer)
-		buf.ReadFrom(resp.Body)
+		if _, err := buf.ReadFrom(resp.Body); err != nil {
+			return err
+		}
 
 		return fmt.Errorf("error while sending slack message: %s(%d)", buf.String(), resp.StatusCode)
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
+	"github.com/hupe1980/notifier/util"
 	"go.uber.org/multierr"
 )
 
@@ -36,33 +37,45 @@ func New(client *http.Client, options []*Options) (*Provider, error) {
 func (pr *Provider) Send(ctx context.Context, message string, extras map[string]string) error {
 	var sendErr error
 
-	for _, p := range pr.SNS {
-		awsCfg, err := config.LoadDefaultConfig(
-			context.TODO(),
-			config.WithHTTPClient(pr.client),
-			config.WithRegion(p.Region),
-			config.WithSharedConfigProfile(p.Profile),
-			config.WithAssumeRoleCredentialOptions(func(aro *stscreds.AssumeRoleOptions) {
-				aro.TokenProvider = stscreds.StdinTokenProvider
-			}),
-		)
+	for _, opts := range pr.SNS {
+		err := pr.send(ctx, message, extras, opts)
 		if err != nil {
 			sendErr = multierr.Append(sendErr, err)
-			continue
-		}
-
-		snsClient := sns.NewFromConfig(awsCfg)
-
-		input := &sns.PublishInput{
-			Message:  &message,
-			TopicArn: &p.TopicARN,
-		}
-
-		if _, err := snsClient.Publish(ctx, input); err != nil {
-			sendErr = multierr.Append(sendErr, err)
-			continue
 		}
 	}
 
 	return sendErr
+}
+
+func (pr *Provider) send(ctx context.Context, message string, extras map[string]string, options *Options) error {
+	message, err := util.ExecuteTemplate(options.ID, options.Template, message, extras)
+	if err != nil {
+		return err
+	}
+
+	awsCfg, err := config.LoadDefaultConfig(
+		context.TODO(),
+		config.WithHTTPClient(pr.client),
+		config.WithRegion(options.Region),
+		config.WithSharedConfigProfile(options.Profile),
+		config.WithAssumeRoleCredentialOptions(func(aro *stscreds.AssumeRoleOptions) {
+			aro.TokenProvider = stscreds.StdinTokenProvider
+		}),
+	)
+	if err != nil {
+		return err
+	}
+
+	snsClient := sns.NewFromConfig(awsCfg)
+
+	input := &sns.PublishInput{
+		Message:  &message,
+		TopicArn: &options.TopicARN,
+	}
+
+	if _, err := snsClient.Publish(ctx, input); err != nil {
+		return err
+	}
+
+	return nil
 }

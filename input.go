@@ -51,17 +51,16 @@ func (i *Input) Close() error {
 }
 
 func inputFile(filename string) (*os.File, error) {
-	var f *os.File
 	switch {
 	case filename != "":
 		f, err := os.Open(filename)
 		if err != nil {
 			return nil, err
 		}
+
 		return f, nil
 	case hasStdin():
-		f = os.Stdin
-		return f, nil
+		return os.Stdin, nil
 	default:
 		return nil, errors.New("no input data")
 	}

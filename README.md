@@ -8,9 +8,8 @@
 ```bash
 nmap -p80,443 scanme.nmap.org | notifier -b
 ```
-
-<div align="left">
-  <img src="slack.png" alt="slack" width="700px"></a>
+<div align="center">
+  <img src="slack.png" alt="slack" width="600px"></a>
 </div>
 
 ## Installing
@@ -44,7 +43,7 @@ Download the pre-compiled binaries from the [releases page](https://github.com/h
 ## Usage
 ```console
 Usage:
-  notifier [data] [flags]
+  notifier [filename] [flags]
 
 Flags:
   -b, --bulk             enable bulk processing
@@ -55,7 +54,9 @@ Flags:
   -v, --version          version for notifier
 ```
 
-### Provider
+### Config
+The default config file must be created at $HOME/.config/notifier/config.yaml and can have the following contents:
+
 ```yaml
 proxy: http://proxy.org
 rateLimit: 5
@@ -75,7 +76,7 @@ providers:
 ```
 
 ### Template
-The following placeholders are supported:
+`notifier` uses `{{ .Message }}` as the default template. You can customize the template with the following placeholders:
 - {{ .Message }}
 - {{ .Username }}
 - {{ .Hostname }}

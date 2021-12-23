@@ -26,7 +26,7 @@ func main() {
 	}
 
 	rootCmd := &cobra.Command{
-		Use:     "notifier [data]",
+		Use:     "notifier [filename]",
 		Version: version,
 		Short:   "Tiny helper for publishing notifications on a variety of supported platforms",
 		Args:    cobra.MaximumNArgs(1),
@@ -106,14 +106,15 @@ func main() {
 		for _, v := range multierr.Errors(err) {
 			fmt.Fprintln(os.Stderr, v)
 		}
+
 		os.Exit(1)
 	}
 }
 
 type config struct {
-	Providers *provider.ProviderOptions `mapstructure:"providers,omitempty"`
-	Proxy     string                    `mapstructure:"proxy,omitempty"`
-	RateLimit int                       `mapstructure:"rateLimit,omitempty"`
+	Providers *provider.Options `mapstructure:"providers,omitempty"`
+	Proxy     string            `mapstructure:"proxy,omitempty"`
+	RateLimit int               `mapstructure:"rateLimit,omitempty"`
 }
 
 func readConfig(filename string) (*config, error) {

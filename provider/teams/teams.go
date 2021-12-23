@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/hupe1980/notifier/util"
 	"go.uber.org/multierr"
 )
 
@@ -47,8 +48,12 @@ func (pr *Provider) Send(ctx context.Context, message string, extras map[string]
 }
 
 func (pr *Provider) send(ctx context.Context, message string, extras map[string]string, options *Options) error {
-	var sections []Section
+	message, err := util.ExecuteTemplate(options.ID, options.Template, message, extras)
+	if err != nil {
+		return err
+	}
 
+	sections := []Section{}
 	for _, line := range strings.Split(message, "\n") {
 		sections = append(sections, Section{
 			Text: line,
