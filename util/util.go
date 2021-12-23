@@ -5,7 +5,7 @@ import (
 	"text/template"
 )
 
-func Filter(s []string, e string) bool {
+func ContainsOrIsEmpty(s []string, e string) bool {
 	if len(s) == 0 {
 		return true
 	}

@@ -11,6 +11,8 @@ import (
 	"go.uber.org/multierr"
 )
 
+const Name = "teams"
+
 type Options struct {
 	ID         string `mapstructure:"id,omitempty"`
 	WebhookURL string `mapstructure:"webhookUrl,omitempty"`

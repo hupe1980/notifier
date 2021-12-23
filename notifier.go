@@ -10,6 +10,7 @@ import (
 	"github.com/hupe1980/notifier/provider/sns"
 	"github.com/hupe1980/notifier/provider/teams"
 	"github.com/hupe1980/notifier/provider/webhook"
+	"github.com/hupe1980/notifier/util"
 	"go.uber.org/multierr"
 )
 
@@ -22,12 +23,12 @@ type Notifier struct {
 	client    *http.Client
 }
 
-func New(client *http.Client, options *provider.Options) (*Notifier, error) {
+func New(client *http.Client, providers []string, options *provider.Options) (*Notifier, error) {
 	notifier := &Notifier{
 		client: client,
 	}
 
-	if options.Slack != nil {
+	if options.Slack != nil && util.ContainsOrIsEmpty(providers, slack.Name) {
 		provider, err := slack.New(client, options.Slack)
 		if err != nil {
 			return nil, err
@@ -36,7 +37,7 @@ func New(client *http.Client, options *provider.Options) (*Notifier, error) {
 		notifier.providers = append(notifier.providers, provider)
 	}
 
-	if options.SNS != nil {
+	if options.SNS != nil && util.ContainsOrIsEmpty(providers, sns.Name) {
 		provider, err := sns.New(client, options.SNS)
 		if err != nil {
 			return nil, err
@@ -45,7 +46,7 @@ func New(client *http.Client, options *provider.Options) (*Notifier, error) {
 		notifier.providers = append(notifier.providers, provider)
 	}
 
-	if options.Teams != nil {
+	if options.Teams != nil && util.ContainsOrIsEmpty(providers, teams.Name) {
 		provider, err := teams.New(client, options.Teams)
 		if err != nil {
 			return nil, err
@@ -54,7 +55,7 @@ func New(client *http.Client, options *provider.Options) (*Notifier, error) {
 		notifier.providers = append(notifier.providers, provider)
 	}
 
-	if options.Webhook != nil {
+	if options.Webhook != nil && util.ContainsOrIsEmpty(providers, webhook.Name) {
 		provider, err := webhook.New(client, options.Webhook)
 		if err != nil {
 			return nil, err

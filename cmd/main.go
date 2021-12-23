@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"strings"
 
 	"github.com/hupe1980/notifier"
 	"github.com/hupe1980/notifier/provider"
@@ -23,13 +24,16 @@ func main() {
 		proxy     string
 		rateLimit int
 		bulk      bool
+		providers []string
+		extras    []string
 	}
 
 	rootCmd := &cobra.Command{
 		Use:     "notifier [filename]",
 		Version: version,
-		Short:   "Tiny helper for publishing notifications on a variety of supported platforms",
+		Short:   "Tiny helper for publishing notifications on different platforms",
 		Args:    cobra.MaximumNArgs(1),
+		Example: "nmap -p80,443 scanme.nmap.org | notifier -b",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := readConfig(opts.config)
 			if err != nil {
@@ -37,7 +41,8 @@ func main() {
 			}
 
 			httpclientOptions := &notifier.HTTPClientOptions{
-				Proxy: opts.proxy,
+				Proxy:     cfg.Proxy,
+				RateLimit: cfg.RateLimit,
 			}
 
 			if opts.proxy != "" {
@@ -53,7 +58,7 @@ func main() {
 				return err
 			}
 
-			n, err := notifier.New(c, cfg.Providers)
+			n, err := notifier.New(c, opts.providers, cfg.Providers)
 			if err != nil {
 				return err
 			}
@@ -69,7 +74,7 @@ func main() {
 			}
 			defer in.Close()
 
-			extras, err := additionalInfos()
+			extras, err := additionalInfos(opts.extras)
 			if err != nil {
 				return err
 			}
@@ -101,6 +106,8 @@ func main() {
 	rootCmd.Flags().StringVarP(&opts.proxy, "proxy", "", "", "proxy url")
 	rootCmd.Flags().IntVarP(&opts.rateLimit, "rate-limit", "", 0, "maximum number of HTTP requests per second")
 	rootCmd.Flags().BoolVarP(&opts.bulk, "bulk", "b", false, "enable bulk processing")
+	rootCmd.Flags().StringArrayVarP(&opts.providers, "provider", "p", nil, "provider to send the notification to")
+	rootCmd.Flags().StringArrayVarP(&opts.extras, "extra", "e", nil, "additional informations for use in the template (key=value)")
 
 	if err := rootCmd.Execute(); err != nil {
 		for _, v := range multierr.Errors(err) {
@@ -143,7 +150,7 @@ func readConfig(filename string) (*config, error) {
 	return cfg, nil
 }
 
-func additionalInfos() (map[string]string, error) {
+func additionalInfos(extras []string) (map[string]string, error) {
 	user, err := user.Current()
 	if err != nil {
 		return nil, err
@@ -154,8 +161,15 @@ func additionalInfos() (map[string]string, error) {
 		return nil, err
 	}
 
-	return map[string]string{
+	infos := map[string]string{
 		"Username": user.Username,
 		"Hostname": hostname,
-	}, nil
+	}
+
+	for _, v := range extras {
+		i := strings.SplitN(v, "=", 2)
+		infos[i[0]] = i[1]
+	}
+
+	return infos, nil
 }

@@ -11,6 +11,8 @@ import (
 	"go.uber.org/multierr"
 )
 
+const Name = "sns"
+
 type Options struct {
 	ID       string `mapstructure:"id,omitempty"`
 	Region   string `mapstructure:"region,omitempty"`

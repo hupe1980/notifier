@@ -1,8 +1,8 @@
 # notifier
-> Tiny helper for publishing notifications on a variety of supported platforms: 
+> Tiny helper for publishing notifications on different platforms: 
 - #slack
-- AWS SNS
-- Teams
+- Amazon SNS
+- Microsoft Teams
 - Custom Webhooks
 
 ```bash
@@ -45,13 +45,18 @@ Download the pre-compiled binaries from the [releases page](https://github.com/h
 Usage:
   notifier [filename] [flags]
 
+Examples:
+nmap -p80,443 scanme.nmap.org | notifier -b
+
 Flags:
-  -b, --bulk             enable bulk processing
-  -c, --config string    path to notifier configuration file (default: $HOME/.config/notifier/config.yaml)
-  -h, --help             help for notifier
-      --proxy string     proxy url
-      --rate-limit int   maximum number of HTTP requests per second
-  -v, --version          version for notifier
+  -b, --bulk                   enable bulk processing
+  -c, --config string          path to notifier configuration file (default: $HOME/.config/notifier/config.yaml)
+  -e, --extra stringArray      additional informations for use in the template (key=value)
+  -h, --help                   help for notifier
+  -p, --provider stringArray   provider to send the notification to
+      --proxy string           proxy url
+      --rate-limit int         maximum number of HTTP requests per second
+  -v, --version                version for notifier
 ```
 
 ### Config
@@ -73,6 +78,15 @@ providers:
     - id: slack
       webhookUrl: https://hooks.slack.com/services/xxx
       template: '{{ .Message }}'
+  teams:
+    - id: teams
+      webhookUrl: https://outlook.office.com/webhook/xxx
+      template: '{{ .Message }}'
+  sns:
+    - id: sns
+      region: us-east-1
+      profile: notifier
+      topicArn: arn:aws:sns:us-east-1:123456789012:MyTopic
 ```
 
 ### Template
@@ -80,6 +94,12 @@ providers:
 - {{ .Message }}
 - {{ .Username }}
 - {{ .Hostname }}
+
+## References
+- [#slack Incoming Webhooks](https://api.slack.com/messaging/webhooks)
+- [Microsoft Teams Incoming Webhooks](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook)
+- [Amazon SNS](https://docs.aws.amazon.com/sns/latest/dg/welcome.html)
+
 ## License
 [MIT](LICENCE)
 

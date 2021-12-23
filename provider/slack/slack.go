@@ -11,6 +11,8 @@ import (
 	"go.uber.org/multierr"
 )
 
+const Name = "slack"
+
 type Options struct {
 	ID         string `yaml:"id,omitempty"`
 	WebhookURL string `yaml:"webhookUrl,omitempty"`
