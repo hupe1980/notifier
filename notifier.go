@@ -72,6 +72,10 @@ func (n *Notifier) Send(ctx context.Context, message string, extras map[string]s
 
 	message = ansiRE.ReplaceAllString(message, "")
 
+	if message == "" {
+		return nil
+	}
+
 	for _, p := range n.providers {
 		if err := p.Send(ctx, message, extras); err != nil {
 			sendErr = multierr.Append(sendErr, err)
